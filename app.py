@@ -146,12 +146,111 @@ def quick_sort(arr, visualize):
     quick_sort_helper(arr, 0, len(arr) - 1, visualize)
     return arr
 
+def counting_sort(arr, visualize):
+    max_val = max(arr)
+    count = [0] * (max_val + 1)
+    output = [0] * len(arr)
+    
+    for num in arr:
+        count[num] += 1
+    
+    for i in range(1, len(count)):
+        count[i] += count[i - 1]
+    
+    for num in reversed(arr):
+        output[count[num] - 1] = num
+        count[num] -= 1
+        visualize(output)
+        time.sleep(0.1)
+    
+    arr[:] = output
+    return arr
+
+
+def radix_sort(arr, visualize):
+    max_val = max(arr)
+    exp = 1
+    
+    while max_val // exp > 0:
+        counting_sort_radix(arr, exp, visualize)
+        exp *= 10
+    return arr
+
+
+def counting_sort_radix(arr, exp, visualize):
+    n = len(arr)
+    output = [0] * n
+    count = [0] * 10
+    
+    for num in arr:
+        index = (num // exp) % 10
+        count[index] += 1
+    
+    for i in range(1, 10):
+        count[i] += count[i - 1]
+    
+    for num in reversed(arr):
+        index = (num // exp) % 10
+        output[count[index] - 1] = num
+        count[index] -= 1
+        visualize(output)
+        time.sleep(0.1)
+    
+    for i in range(n):
+        arr[i] = output[i]
+
+
+def bucket_sort(arr, visualize):
+    num_buckets = len(arr) // 5
+    max_val = max(arr)
+    buckets = [[] for _ in range(num_buckets)]
+    
+    for num in arr:
+        index = min(num_buckets - 1, num * num_buckets // (max_val + 1))
+        buckets[index].append(num)
+    
+    for bucket in buckets:
+        bucket.sort()
+        visualize(arr)
+        time.sleep(0.1)
+    
+    arr[:] = [num for bucket in buckets for num in bucket]
+    return arr
+
+
+def shell_sort(arr, visualize):
+    n = len(arr)
+    gap = n // 2
+    
+    while gap > 0:
+        for i in range(gap, n):
+            temp = arr[i]
+            j = i
+            while j >= gap and arr[j - gap] > temp:
+                arr[j] = arr[j - gap]
+                j -= gap
+                visualize(arr, [j])
+                time.sleep(0.1)
+            arr[j] = temp
+        gap //= 2
+    return arr
+
+
+def tim_sort(arr, visualize):
+    arr.sort()
+    visualize(arr)
+    time.sleep(0.1)
+    return arr
+
 # Sidebar controls
 st.sidebar.header("Controls")
 array_size = st.sidebar.slider("Array Size", 5, 50, 20)
 algorithm = st.sidebar.selectbox(
     "Select Sorting Algorithm",
-    ["Bubble Sort", "Selection Sort", "Quick Sort", "Insertion Sort", "Merge Sort", "Heap Sort"]
+    [
+        "Bubble Sort", "Selection Sort", "Quick Sort", "Insertion Sort", "Merge Sort", "Heap Sort",
+        "Counting Sort", "Radix Sort", "Bucket Sort", "Shell Sort", "Tim Sort"
+    ]
 )
 
 # Generate random array
@@ -204,8 +303,18 @@ if st.button("Start Sorting"):
         insertion_sort(arr, visualize_array)
     elif algorithm == "Merge Sort":
         merge_sort(arr, visualize_array)
-    else:  # Heap Sort
+    elif algorithm == "Heap Sort":  
         heap_sort(arr, visualize_array)
+    elif algorithm == "Counting Sort":
+        counting_sort(arr, visualize_array)
+    elif algorithm == "Radix Sort":
+        radix_sort(arr, visualize_array)
+    elif algorithm == "Bucket Sort":
+        bucket_sort(arr, visualize_array)
+    elif algorithm == "Shell Sort":
+        shell_sort(arr, visualize_array)
+    else:
+        tim_sort(arr, visualize_array)
     
     # Show final sorted array
     visualize_array(arr)
@@ -223,6 +332,11 @@ This visualization shows different sorting algorithms in action:
 - **Insertion Sort**: Builds the final sorted array one item at a time, by repeatedly inserting a new element into the sorted portion of the array.
 - **Merge Sort**: Divides the array into smaller subarrays, sorts them, and then merges them back together to form the final sorted array.
 - **Heap Sort**: Creates a heap data structure from the array and repeatedly extracts the maximum element to build the sorted array.
+- **Counting Sort**: Uses an auxiliary array to count occurrences of elements and reconstructs the sorted array.
+- **Radix Sort**: Sorts numbers by processing individual digits, from least to most significant.
+- **Bucket Sort**: Distributes elements into multiple buckets, sorts each bucket, and then merges them.
+- **Shell Sort**: A variation of insertion sort that moves elements over larger gaps to improve efficiency.
+- **Tim Sort**: A hybrid sorting algorithm combining merge sort and insertion sort for optimal performance.
 
 Red bars indicate the elements being compared or swapped at each step.
 """)
